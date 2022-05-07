@@ -4,8 +4,8 @@ let booksView = document.querySelector('#book-view');
 let editDeleteView = document.querySelector('#edit-delete-view');
 let newBookView = document.querySelector('#new-book-view');
 
-let booksTbody = document.querySelector('tbody');
-
+let booksTbody = booksView.querySelector('tbody');
+let editTbody = editDeleteView.querySelector('tbody');
 // BUTTONS
 // Navbar
 let booksViewBtn = document.querySelector('#books-view-btn');
@@ -31,6 +31,28 @@ function save() {
     localStorage.db = JSON.stringify(db);
 }
 
+//Save new book
+function saveNewBook() {
+    let newBook = {
+        id: generateId(),
+        name: inputName.value,
+        ganre: genreSelect.value,
+        publisher: publisherSelect.value,
+        date: inputDate.value
+    }
+    db.push(newBook);
+    // console.log(db);
+    createBooksTable(db);
+    displayBooksView();
+    resetInutForm();
+}
+
+function resetInutForm() {
+    inputName.value = "";
+    inputDate.value = "";
+    genreSelect.value = "";
+    publisherSelect.value = "";
+}
 // Displays
 function displayBooksView(e) {
     if (e) {
@@ -56,10 +78,13 @@ function displayEditDeleteBookView(e) {
     if (e) {
         e.preventDefault()
     }
+    createEditDeleteTable();
     booksView.style.display = "none";
     newBookView.style.display = "none";
     editDeleteView.style.display = "block";
 }
+
+createBooksTable(db);
 
 // Options
 function createGenreOptions() {
@@ -83,7 +108,7 @@ function createPublisherOptions() {
 }
 
 // Create Books Table
-function createBookTable(currentDb) {    
+function createBooksTable(currentDb) {
     console.log(currentDb);
     if (!currentDb) {
         currentDb = db;
@@ -97,30 +122,44 @@ function createBookTable(currentDb) {
             <td>${book.ganre}</td>
             <td>${book.publisher}</td>
             <td>${book.date}</td>
-         </tr>
+        </tr>
         `.trim()
     })
     booksTbody.innerHTML = text;
-    
+
 }
 
-//Save new book
-function saveNewBook() {
-    let newBook = {
-        id: generateId(),
-        name: inputName.value,
-        ganre: genreSelect.value,
-        publisher: publisherSelect.value,
-        date: inputDate.value
-    }
-    db.push(newBook);
-    console.log(db);
-    
-    createBookTable(db);
+// Create Edit/Delete Table
+function createEditDeleteTable() {
+    let text = '';
+    db.forEach(book => {
+        text += `
+            <tr>
+            <td>${book.id}</td>
+            <td>${book.name}</td>
+            <td>${book.ganre}</td>
+            <td>${book.publisher}</td>
+            <td>${book.date}</td>
+            <td><button class="btn btn-sm btn-danger">Edit</button></td>
+            <td><button class="btn btn-sm btn-warning delete-btns" data-id="${book.id}">Delete</button></td>
+            </tr>
+        `.trim();
+    })
+    editTbody.innerHTML = text;
+    let allDeleteBtn = document.querySelectorAll('.delete-btns');
+    allDeleteBtn.forEach( btn => {
+        btn.addEventListener('click', deleteBook);        
+    })
+}
+
+function deleteBook() {
+    let id = this.getAttribute('data-id');
+    db = db.filter(book => book.id !== id);
+    createBooksTable();
     displayBooksView();
-    
 
 }
+
 // create ID
 function generateId() {
     let randomId;
